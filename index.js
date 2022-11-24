@@ -42,6 +42,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 async function run() {
     try {
         const usersCollection = client.db('secondLook').collection('Users');
+        const categoryCollection = client.db('secondLook').collection('Category');
 
 
         //api fro JWT
@@ -64,6 +65,13 @@ async function run() {
             const users = req.body
             const result = await usersCollection.insertOne(users)
             res.send(result)
+        })
+
+        //api for product category
+        app.get('/category', async(req, res) => {
+            const query = {}
+            const category = await categoryCollection.find(query).toArray()
+            res.send(category)
         })
     }
     finally {
