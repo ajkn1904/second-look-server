@@ -33,13 +33,13 @@ const verifyJwt = (req, res, next) => {
 
 
 //is seller account verification
-const verifySeller = async(req, res, next) =>  {
+const verifySeller = async (req, res, next) => {
     console.log('inside verifySeller', req.decoded.email)
     const decodedEmail = req.decoded.email;
-    const query = {email: decodedEmail}
+    const query = { email: decodedEmail }
     const user = await usersCollection.findOne(query)
-    if(user.role !== 'Seller'){
-        return res.status(403).send({message: 'forbidden access'})
+    if (user.role !== 'Seller') {
+        return res.status(403).send({ message: 'forbidden access' })
     }
     next();
 }
@@ -86,9 +86,9 @@ async function run() {
         //for testing if the user is admin
         app.get('/users/admin/:email', async (req, res) => {
             const email = req.params.email;
-            const filter = {email};
+            const filter = { email };
             const result = await usersCollection.findOne(filter)
-            res.send({isAdmin: result?.role === 'Admin' })
+            res.send({ isAdmin: result?.role === 'Admin' })
         })
 
 
@@ -102,13 +102,13 @@ async function run() {
             res.send(result)
         })
 
-        
-       // testing if the user is buyer
+
+        // testing if the user is buyer
         app.get('/users/buyers/:email', async (req, res) => {
             const email = req.params.email;
-            const filter = {email};
+            const filter = { email };
             const result = await usersCollection.findOne(filter)
-            res.send({isBuyer: result?.role === 'Buyer' })
+            res.send({ isBuyer: result?.role === 'Buyer' })
         })
 
 
@@ -122,13 +122,13 @@ async function run() {
             res.send(result)
         })
 
-       // testing if the user is seller
+        // testing if the user is seller
 
         app.get('/users/sellers/:email', async (req, res) => {
             const email = req.params.email;
-            const filter = {email};
+            const filter = { email };
             const result = await usersCollection.findOne(filter)
-            res.send({isSeller: result?.role === 'Seller' })
+            res.send({ isSeller: result?.role === 'Seller' })
         })
 
 
@@ -159,14 +159,14 @@ async function run() {
 
 
         //api for adding products
-        app.post('/product', async(req, res) => {
+        app.post('/product', async (req, res) => {
             const product = req.body;
             const result = await productCollection.insertOne(product)
             res.send(product);
-          })
+        })
 
-          //api for getting sellers added products
-          app.get('/products', verifyJwt, async (req, res) => {
+        //api for getting sellers added products
+        app.get('/products', verifyJwt, async (req, res) => {
             const email = req.query.email;
             const decodedEmail = req.decoded.email;
 
@@ -176,6 +176,15 @@ async function run() {
             const query = { sellerEmail: email };
             const product = await productCollection.find(query).toArray();
             res.send(product);
+        })
+
+
+        //api for deleting a product from database
+        app.delete('/products/:id', verifyJwt, async (req, res) => {
+            const id = req.params.id;
+            const query = {_id: ObjectId(id)}
+            const result = await productCollection.deleteOne(query)
+            res.send(result)
         })
 
 
