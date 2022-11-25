@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId  } = require('mongodb');
 require('dotenv').config();
 const port = process.env.PORT || 5000;
 
@@ -43,6 +43,8 @@ async function run() {
     try {
         const usersCollection = client.db('secondLook').collection('Users');
         const categoryCollection = client.db('secondLook').collection('Category');
+        const productCollection = client.db('secondLook').collection('Products');
+        const ordersCollection = client.db('secondLook').collection('Orders');
 
 
         //api fro JWT
@@ -53,7 +55,7 @@ async function run() {
             console.log(user);
             //token implementation
             if (user) {
-                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expireIn: '12h' })
+                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '1d' })
                 return res.send({ accessToken: token });
             }
             res.status(403).send({ accessToken: '' })
@@ -73,6 +75,32 @@ async function run() {
             const category = await categoryCollection.find(query).toArray()
             res.send(category)
         })
+
+
+        //api for loading products
+        app.get('/category/:id', async(req, res) => {
+            const id = req.params.id;
+            const filter = {cat_id: id};
+            const result = await productCollection.find(filter).toArray();
+            res.send(result)
+        })
+
+
+        app.get('/product/:id', async(req, res) => {
+            const id = req.params.id;
+            const filter = {_id: ObjectId(id)};
+            const result = await productCollection.findOne(filter);
+            res.send(result)
+        })
+
+
+        //api for orders
+        app.post('/orders', async(req, res) => {
+            const order = req.body;
+            const result = await ordersCollection.insertOne(order)
+            res.send(result)
+        })
+
     }
     finally {
 
