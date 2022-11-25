@@ -69,18 +69,55 @@ async function run() {
             res.send(result)
         })
 
+
+        //for testing if the user is admin
+        app.get('/users/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const filter = {email};
+            const result = await usersCollection.findOne(filter)
+            res.send({isAdmin: result?.role === 'Admin' })
+        })
+
+
+
+
+
         // api for buyers
         app.get('/buyers', async (req, res) => {
             const filter = { role: 'Buyer' };
             const result = await usersCollection.find(filter).toArray()
             res.send(result)
         })
+
+        
+       // testing if the user is buyer
+        app.get('/users/buyers/:email', async (req, res) => {
+            const email = req.params.email;
+            const filter = {email};
+            const result = await usersCollection.findOne(filter)
+            res.send({isBuyer: result?.role === 'Buyer' })
+        })
+
+
+
+
+
         // api for sellers
         app.get('/sellers', async (req, res) => {
             const filter = { role: 'Seller' };
             const result = await usersCollection.find(filter).toArray()
             res.send(result)
         })
+
+       // testing if the user is seller
+
+        app.get('/users/sellers/:email', async (req, res) => {
+            const email = req.params.email;
+            const filter = {email};
+            const result = await usersCollection.findOne(filter)
+            res.send({isSeller: result?.role === 'Seller' })
+        })
+
 
         //api for product category
         app.get('/category', async (req, res) => {
