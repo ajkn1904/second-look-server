@@ -69,6 +69,19 @@ async function run() {
             res.send(result)
         })
 
+        // api for buyers
+        app.get('/buyers', async (req, res) => {
+            const filter = { role: 'Buyer' };
+            const result = await usersCollection.find(filter).toArray()
+            res.send(result)
+        })
+        // api for sellers
+        app.get('/sellers', async (req, res) => {
+            const filter = { role: 'Seller' };
+            const result = await usersCollection.find(filter).toArray()
+            res.send(result)
+        })
+
         //api for product category
         app.get('/category', async (req, res) => {
             const query = {}
