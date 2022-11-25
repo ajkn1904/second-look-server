@@ -6,7 +6,7 @@ const port = process.env.PORT || 5000;
 
 
 const app = express();
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken')     //jwt
 
 //middleware
 app.use(cors());
@@ -29,6 +29,19 @@ const verifyJwt = (req, res, next) => {
         req.decoded = decoded;
         next();
     })
+}
+
+
+//is seller account verification
+const verifySeller = async(req, res, next) =>  {
+    console.log('inside verifySeller', req.decoded.email)
+    const decodedEmail = req.decoded.email;
+    const query = {email: decodedEmail}
+    const user = await usersCollection.findOne(query)
+    if(user.role !== 'Seller'){
+        return res.status(403).send({message: 'forbidden access'})
+    }
+    next();
 }
 
 
@@ -136,12 +149,36 @@ async function run() {
         })
 
 
+
         app.get('/product/:id', async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
             const result = await productCollection.findOne(filter);
             res.send(result)
         })
+
+
+        //api for adding products
+        app.post('/product', async(req, res) => {
+            const product = req.body;
+            const result = await productCollection.insertOne(product)
+            res.send(product);
+          })
+
+          //api for getting sellers added products
+          app.get('/products', verifyJwt, async (req, res) => {
+            const email = req.query.email;
+            const decodedEmail = req.decoded.email;
+
+            if (email !== decodedEmail) {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+            const query = { sellerEmail: email };
+            const product = await productCollection.find(query).toArray();
+            res.send(product);
+        })
+
+
 
 
         //api for orders
@@ -151,6 +188,8 @@ async function run() {
             res.send(result)
         })
 
+
+        //api for loading orders
         app.get('/orders', verifyJwt, async (req, res) => {
             const email = req.query.email;
             const decodedEmail = req.decoded.email;
