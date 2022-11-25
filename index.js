@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion, ObjectId  } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const port = process.env.PORT || 5000;
 
@@ -70,7 +70,7 @@ async function run() {
         })
 
         //api for product category
-        app.get('/category', async(req, res) => {
+        app.get('/category', async (req, res) => {
             const query = {}
             const category = await categoryCollection.find(query).toArray()
             res.send(category)
@@ -78,27 +78,39 @@ async function run() {
 
 
         //api for loading products
-        app.get('/category/:id', async(req, res) => {
+        app.get('/category/:id', async (req, res) => {
             const id = req.params.id;
-            const filter = {cat_id: id};
+            const filter = { cat_id: id };
             const result = await productCollection.find(filter).toArray();
             res.send(result)
         })
 
 
-        app.get('/product/:id', async(req, res) => {
+        app.get('/product/:id', async (req, res) => {
             const id = req.params.id;
-            const filter = {_id: ObjectId(id)};
+            const filter = { _id: ObjectId(id) };
             const result = await productCollection.findOne(filter);
             res.send(result)
         })
 
 
         //api for orders
-        app.post('/orders', async(req, res) => {
+        app.post('/orders', async (req, res) => {
             const order = req.body;
             const result = await ordersCollection.insertOne(order)
             res.send(result)
+        })
+
+        app.get('/orders', verifyJwt, async (req, res) => {
+            const email = req.query.email;
+            const decodedEmail = req.decoded.email;
+
+            if (email !== decodedEmail) {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+            const query = { userEmail: email };
+            const orders = await ordersCollection.find(query).toArray();
+            res.send(orders);
         })
 
     }
