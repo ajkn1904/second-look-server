@@ -33,9 +33,6 @@ const verifyJwt = (req, res, next) => {
 
 
 
-
-
-
 //mongodb info
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.7splzic.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -80,6 +77,31 @@ async function run() {
         }
 
 
+        //is seller account verification
+        const verifySeller = async (req, res, next) => {
+            console.log('inside verifySeller', req.decoded.email)
+            const decodedEmail = req.decoded.email;
+            const query = { email: decodedEmail }
+            const user = await usersCollection.findOne(query)
+            if (user.role !== 'Seller') {
+                return res.status(403).send({ message: 'forbidden access from verify Seller' })
+            }
+            next();
+        }
+
+
+        //is buyer account verification
+        const verifyBuyer = async (req, res, next) => {
+            console.log('inside verifySeller', req.decoded.email)
+            const decodedEmail = req.decoded.email;
+            const query = { email: decodedEmail }
+            const user = await usersCollection.findOne(query)
+            if (user.role !== 'Buyer') {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+            next();
+        }
+
 
 
         //user 
@@ -98,6 +120,18 @@ async function run() {
             res.send({ isAdmin: result?.role === 'Admin' })
         })
 
+
+
+        //for finding a specific user by email
+        app.get('/users/:email', async (req, res) => {
+            const email = req.params.email;
+            const filter = { email };
+            const result = await usersCollection.findOne(filter)
+            res.send(result)
+        })
+
+
+        //api for verify seller
         app.put('/users/admin/:id', verifyJwt, verifyAdmin, async (req, res) => {
 
             const id = req.params.id;
@@ -143,15 +177,15 @@ async function run() {
 
 
 
-        // api for sellers
+        // api for getting user with seller role
         app.get('/sellers', async (req, res) => {
             const filter = { role: 'Seller' };
             const result = await usersCollection.find(filter).toArray()
             res.send(result)
         })
 
-        // testing if the user is seller
 
+        // testing if the user is seller
         app.get('/users/sellers/:email', async (req, res) => {
             const email = req.params.email;
             const filter = { email };
@@ -190,7 +224,17 @@ async function run() {
         })
 
 
+        
+        //api for loading advertised product
+        app.get('/advertisedProducts', async (req, res) => {
+            const query = {advertise: true}
+            const category = await productCollection.find(query).toArray()
+            res.send(category)
+        })
 
+
+
+        //api for loading a product using id
         app.get('/product/:id', async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
@@ -200,14 +244,15 @@ async function run() {
 
 
         //api for adding products
-        app.post('/product', async (req, res) => {
+        app.post('/product',verifyJwt, verifySeller, async (req, res) => {     
             const product = req.body;
             const result = await productCollection.insertOne(product)
             res.send(product);
         })
 
+
         //api for getting sellers added products
-        app.get('/products', verifyJwt, async (req, res) => {
+        app.get('/sellers/products', verifyJwt, verifySeller, async (req, res) => {
             const email = req.query.email;
             const decodedEmail = req.decoded.email;
 
@@ -221,7 +266,22 @@ async function run() {
 
 
         //api for deleting a product from database
-        app.delete('/products/:id', verifyJwt, async (req, res) => {
+        app.put('/seller/products/:id', verifyJwt, verifySeller, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const option = { upsert: true }
+            const updatedDoc = {
+                $set: {
+                    advertise: true
+                }
+            }
+            const result = await productCollection.updateOne(query, updatedDoc, option)
+            res.send(result)
+        })
+
+
+        //api for deleting a product from database
+        app.delete('/seller/products/:id', verifyJwt, verifySeller, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
             const result = await productCollection.deleteOne(query)
