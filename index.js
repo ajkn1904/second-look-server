@@ -32,17 +32,7 @@ const verifyJwt = (req, res, next) => {
 }
 
 
-//is seller account verification
-const verifySeller = async (req, res, next) => {
-    console.log('inside verifySeller', req.decoded.email)
-    const decodedEmail = req.decoded.email;
-    const query = { email: decodedEmail }
-    const user = await usersCollection.findOne(query)
-    if (user.role !== 'Seller') {
-        return res.status(403).send({ message: 'forbidden access' })
-    }
-    next();
-}
+
 
 
 //mongodb info
@@ -112,6 +102,15 @@ async function run() {
         })
 
 
+        //api for deleting a buyer from database
+        app.delete('/buyers/:id', verifyJwt, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await usersCollection.deleteOne(query)
+            res.send(result)
+        })
+
+
 
 
 
@@ -130,6 +129,19 @@ async function run() {
             const result = await usersCollection.findOne(filter)
             res.send({ isSeller: result?.role === 'Seller' })
         })
+
+
+
+        //api for deleting a buyer from database
+        app.delete('/sellers/:id', verifyJwt, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await usersCollection.deleteOne(query)
+            res.send(result)
+        })
+
+
+
 
 
         //api for product category
@@ -182,7 +194,7 @@ async function run() {
         //api for deleting a product from database
         app.delete('/products/:id', verifyJwt, async (req, res) => {
             const id = req.params.id;
-            const query = {_id: ObjectId(id)}
+            const query = { _id: ObjectId(id) }
             const result = await productCollection.deleteOne(query)
             res.send(result)
         })
