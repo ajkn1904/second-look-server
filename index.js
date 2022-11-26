@@ -35,6 +35,7 @@ const verifyJwt = (req, res, next) => {
 
 
 
+
 //mongodb info
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.7splzic.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -65,6 +66,22 @@ async function run() {
         })
 
 
+
+        //is admin account verification
+        const verifyAdmin = async (req, res, next) => {
+            console.log('inside verifyAdmin', req.decoded.email)
+            const decodedEmail = req.decoded.email;
+            const query = { email: decodedEmail }
+            const user = await usersCollection.findOne(query)
+            if (user.role !== 'Admin') {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+            next();
+        }
+
+
+
+
         //user 
         app.post('/users', async (req, res) => {
             const users = req.body
@@ -81,7 +98,19 @@ async function run() {
             res.send({ isAdmin: result?.role === 'Admin' })
         })
 
+        app.put('/users/admin/:id', verifyJwt, verifyAdmin, async (req, res) => {
 
+            const id = req.params.id;
+            const cursor = { _id: ObjectId(id) }
+            const option = { upsert: true }
+            const updatedDoc = {
+                $set: {
+                    verification: true
+                }
+            }
+            const result = await usersCollection.updateOne(cursor, updatedDoc, option)
+            res.send(result);
+        })
 
 
 
