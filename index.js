@@ -166,7 +166,7 @@ async function run() {
 
 
         //api for deleting a buyer from database
-        app.delete('/buyers/:id', verifyJwt, async (req, res) => {
+        app.delete('/buyers/:id', verifyJwt, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
             const result = await usersCollection.deleteOne(query)
@@ -196,7 +196,7 @@ async function run() {
 
 
         //api for deleting a buyer from database
-        app.delete('/sellers/:id', verifyJwt, async (req, res) => {
+        app.delete('/sellers/:id', verifyJwt, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
             const result = await usersCollection.deleteOne(query)
@@ -316,7 +316,7 @@ async function run() {
 
 
 
-        
+
     }
     finally {
 
