@@ -92,7 +92,7 @@ async function run() {
 
         //is buyer account verification
         const verifyBuyer = async (req, res, next) => {
-            console.log('inside verifySeller', req.decoded.email)
+            console.log('inside verifyBuyer', req.decoded.email)
             const decodedEmail = req.decoded.email;
             const query = { email: decodedEmail }
             const user = await usersCollection.findOne(query)
@@ -131,7 +131,7 @@ async function run() {
         })
 
 
-        //api for verify seller
+        //api for seller verification
         app.put('/users/admin/:id', verifyJwt, verifyAdmin, async (req, res) => {
 
             const id = req.params.id;
@@ -148,7 +148,7 @@ async function run() {
 
 
 
-        // api for buyers
+        // api for loading buyers
         app.get('/buyers', async (req, res) => {
             const filter = { role: 'Buyer' };
             const result = await usersCollection.find(filter).toArray()
@@ -207,7 +207,7 @@ async function run() {
 
 
 
-        //api for product category
+        //api for loading product category
         app.get('/category', async (req, res) => {
             const query = {}
             const category = await categoryCollection.find(query).toArray()
@@ -265,7 +265,7 @@ async function run() {
         })
 
 
-        //api for deleting a product from database
+        //api for updating a product on database
         app.put('/seller/products/:id', verifyJwt, verifySeller, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
@@ -280,6 +280,7 @@ async function run() {
         })
 
 
+
         //api for deleting a product from database
         app.delete('/seller/products/:id', verifyJwt, verifySeller, async (req, res) => {
             const id = req.params.id;
@@ -291,7 +292,7 @@ async function run() {
 
 
 
-        //api for orders
+        //api for ordering a product
         app.post('/orders', async (req, res) => {
             const order = req.body;
             const result = await ordersCollection.insertOne(order)
@@ -299,8 +300,8 @@ async function run() {
         })
 
 
-        //api for loading orders
-        app.get('/orders', verifyJwt, async (req, res) => {
+        //api for loading my orders
+        app.get('/orders', verifyJwt, verifyBuyer, async (req, res) => {
             const email = req.query.email;
             const decodedEmail = req.decoded.email;
 
@@ -312,6 +313,10 @@ async function run() {
             res.send(orders);
         })
 
+
+
+
+        
     }
     finally {
 
