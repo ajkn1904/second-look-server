@@ -228,9 +228,18 @@ async function run() {
         //api for loading advertised product
         app.get('/advertisedProducts', async (req, res) => {
             const query = { advertise: true }
-            const category = await productCollection.find(query).toArray()
-            res.send(category)
+            const products = await productCollection.find(query).toArray()
+            res.send(products)
         })
+
+
+        //api for loading a recently added products with limit
+        app.get('/products/recent', async (req, res) => {
+            const query = {};
+            const cursor = productCollection.find(query);
+            const result = await cursor.sort({ _id: -1 }).limit(3).toArray();
+            res.send(result);
+        });
 
 
 
@@ -255,8 +264,8 @@ async function run() {
         //api for loading reported product
         app.get('/reportedProducts', async (req, res) => {
             const query = { reported: true }
-            const category = await productCollection.find(query).toArray()
-            res.send(category)
+            const result = await productCollection.find(query).toArray()
+            res.send(result)
         })
 
 
