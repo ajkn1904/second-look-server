@@ -224,10 +224,10 @@ async function run() {
         })
 
 
-        
+
         //api for loading advertised product
         app.get('/advertisedProducts', async (req, res) => {
-            const query = {advertise: true}
+            const query = { advertise: true }
             const category = await productCollection.find(query).toArray()
             res.send(category)
         })
@@ -244,11 +244,64 @@ async function run() {
 
 
         //api for adding products
-        app.post('/product',verifyJwt, verifySeller, async (req, res) => {     
+        app.post('/product', verifyJwt, verifySeller, async (req, res) => {
             const product = req.body;
             const result = await productCollection.insertOne(product)
             res.send(product);
         })
+
+
+
+        //api for loading reported product
+        app.get('/reportedProducts', async (req, res) => {
+            const query = { reported: true }
+            const category = await productCollection.find(query).toArray()
+            res.send(category)
+        })
+
+
+
+        //api for report a product
+        app.put('/product/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const option = { upsert: true }
+            const updatedDoc = {
+                $set: {
+                    reported: true
+                }
+            }
+            const result = await productCollection.updateOne(query, updatedDoc, option)
+            res.send(result)
+
+        })
+
+        //api for update reported status for a reported product
+        app.put('/admin/product/:id', verifyJwt, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const option = { upsert: true }
+            const updatedDoc = {
+                $set: {
+                    reported: false
+                }
+            }
+            const result = await productCollection.updateOne(query, updatedDoc, option)
+            res.send(result)
+
+        })
+
+
+
+        //api for deleting a reported product from database
+        app.delete('/admin/products/:id', verifyJwt, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await productCollection.deleteOne(query)
+            res.send(result)
+        })
+
+
 
 
         //api for getting sellers added products
