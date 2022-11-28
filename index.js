@@ -294,7 +294,7 @@ async function run() {
         app.get('/products/recent', async (req, res) => {
             const query = {};
             const cursor = productCollection.find(query);
-            const result = await cursor.sort({ _id: -1 }).limit(3).toArray();
+            const result = await cursor.sort({ _id: -1 }).limit(6).toArray();
             res.send(result);
         });
 
