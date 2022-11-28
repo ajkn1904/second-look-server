@@ -111,7 +111,7 @@ async function run() {
             }
             const newUpdatedResult = await productCollection.updateOne(newQuery, newUpdatedDoc)
 
-            
+
             res.send(result)
         })
 
@@ -156,7 +156,7 @@ async function run() {
 
 
 
-        //user 
+        //api for creating user on db 
         app.post('/users', async (req, res) => {
             const users = req.body
             const result = await usersCollection.insertOne(users)
@@ -197,6 +197,9 @@ async function run() {
             const result = await usersCollection.updateOne(cursor, updatedDoc, option)
             res.send(result);
         })
+
+
+
 
 
 
@@ -277,6 +280,7 @@ async function run() {
 
 
 
+
         //api for loading advertised product
         app.get('/advertisedProducts', async (req, res) => {
             const query = { advertise: true }
@@ -284,6 +288,7 @@ async function run() {
             res.send(products)
         })
 
+        
 
         //api for loading a recently added products with limit
         app.get('/products/recent', async (req, res) => {
