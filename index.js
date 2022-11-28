@@ -47,6 +47,7 @@ async function run() {
         const categoryCollection = client.db('secondLook').collection('Category');
         const productCollection = client.db('secondLook').collection('Products');
         const ordersCollection = client.db('secondLook').collection('Orders');
+        const paymentsCollection = client.db('secondLook').collection('payments');
 
 
         //api fro JWT
@@ -73,12 +74,31 @@ async function run() {
                 currency: 'usd',
                 amount: orderAmount,
                 "payment_method_types": ['card']
-              });
-            
-              res.send({
-                clientSecret: paymentIntent.client_secret,
-              });
             });
+
+            res.send({
+                clientSecret: paymentIntent.client_secret,
+            });
+        });
+
+
+
+        //api for store the payment info to db
+        app.post('/payments', async (req, res) => {
+            const payment = req.body;
+            const result = await paymentsCollection.insertOne(payment);
+
+            const id = payment.orderId
+            const query = { _id: ObjectId(id) }
+            const updatedDoc = {
+                $set: {
+                    paid: true,
+                    transactionId: payment.transactionId
+                }
+            }
+            const updatedResult = await ordersCollection.updateOne(query, updatedDoc)
+            res.send(result)
+        })
 
 
         //is admin account verification
