@@ -84,10 +84,11 @@ async function run() {
 
 
         //api for store the payment info to db
-        app.post('/payments', async (req, res) => {
+        app.post('/payments', verifyJwt, async (req, res) => {
             const payment = req.body;
             const result = await paymentsCollection.insertOne(payment);
 
+            //updating ordersCollection
             const id = payment.orderId
             const query = { _id: ObjectId(id) }
             const updatedDoc = {
@@ -97,6 +98,20 @@ async function run() {
                 }
             }
             const updatedResult = await ordersCollection.updateOne(query, updatedDoc)
+
+
+            //updating productsCollection
+            const o_id = payment.itemId
+            const newQuery = { _id: ObjectId(o_id) }
+            const newUpdatedDoc = {
+                $set: {
+                    status: "sold",
+                    advertise: false
+                }
+            }
+            const newUpdatedResult = await productCollection.updateOne(newQuery, newUpdatedDoc)
+
+            
             res.send(result)
         })
 
