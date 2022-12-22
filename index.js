@@ -292,7 +292,7 @@ async function run() {
 
         //api for loading a recently added products with limit
         app.get('/products/recent', async (req, res) => {
-            const query = {};
+            const query = { status: 'available' };
             const cursor = productCollection.find(query);
             const result = await cursor.sort({ _id: -1 }).limit(6).toArray();
             res.send(result);
